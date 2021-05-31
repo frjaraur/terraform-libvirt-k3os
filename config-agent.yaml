@@ -6,5 +6,6 @@ ssh_authorized_keys:
 k3os:
   k3s_args:
     - "agent"
-  labels:
-    node-role.kubernetes.io/worker: worker
+#Does not work yet
+#  labels:
+#    node-role.kubernetes.io/worker: worker
