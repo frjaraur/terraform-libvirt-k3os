@@ -48,7 +48,7 @@ variable "master_memory" {
 variable "k3os_worker_configfile" {
   description = "Worker configuration file for K3s installation"
   type        = string
-  default     = "https://raw.githubusercontent.com/frjaraur/terraform-libvirt-k3os/dev1/config-master.yaml"
+  default     = "https://raw.githubusercontent.com/frjaraur/terraform-libvirt-k3os/dev1/config-worker.yaml"
 }
 
 variable "worker_vcpu" {
