@@ -6,4 +6,3 @@ ssh_authorized_keys:
 k3os:
   k3s_args:
     - "server"
-    - "--disable=traefik"

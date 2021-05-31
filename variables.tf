@@ -9,8 +9,8 @@ variable "k3os_version" {
   default     = "v0.11.1"
 }
 
-variable "node_count" {
-  description = "Number of nodes to deploy"
+variable "worker_count" {
+  description = "Number of workers to deploy"
   type        = number
   default     = 2
 }
@@ -27,26 +27,26 @@ variable "wait_for_cluster_interpreter" {
   default     = ["/bin/sh", "-c"]
 }
 
-variable "server_vcpu" {
-  description = "The amount of virtual CPUs to allocate to the server."
+variable "master_vcpu" {
+  description = "The amount of virtual CPUs to allocate for masters."
   type        = number
   default     = 1
 }
 
-variable "server_memory" {
-  description = "The amount of memory in MiB to allocate to the server."
+variable "master_memory" {
+  description = "The amount of memory in MiB to allocate for masters."
   type        = number
   default     = 1024
 }
 
-variable "agent_vcpu" {
-  description = "The amount of virtual CPUs to allocate to the agents."
+variable "worker_vcpu" {
+  description = "The amount of virtual CPUs to allocate for workers."
   type        = number
   default     = 1
 }
 
-variable "agent_memory" {
-  description = "The amount of memory in MiB to allocate to the agents."
+variable "worker_memory" {
+  description = "The amount of memory in MiB to allocate for workers."
   type        = number
   default     = 1024
 }

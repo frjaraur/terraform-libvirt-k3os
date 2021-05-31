@@ -53,8 +53,8 @@ resource "libvirt_volume" "k3os_master" {
 resource "libvirt_domain" "k3os_master" {
   name = "k3os-master-${var.cluster_name}"
 
-  vcpu   = var.server_vcpu
-  memory = var.server_memory
+  vcpu   = var.master_vcpu
+  memory = var.master_memory
 
   kernel = libvirt_volume.kernel.id
   initrd = libvirt_volume.initrd.id
@@ -85,7 +85,7 @@ resource "libvirt_domain" "k3os_master" {
 }
 
 resource "libvirt_volume" "k3os_worker" {
-  count = var.node_count
+  count = var.worker_count
 
   name   = "k3os-worker-${count.index}.raw"
   size   = "10737418240"
@@ -94,7 +94,7 @@ resource "libvirt_volume" "k3os_worker" {
 }
 
 resource "libvirt_volume" "k3os_worker_data" {
-  count = var.node_count
+  count = var.worker_count
   name   = "k3os-worker-${count.index}-data.raw"
   size   = "10737418240"
   format = "raw"
@@ -102,12 +102,12 @@ resource "libvirt_volume" "k3os_worker_data" {
 }
 
 resource "libvirt_domain" "k3os_worker" {
-  count = var.node_count
+  count = var.worker_count
 
   name = "k3os-worker-${var.cluster_name}-${count.index}"
 
-  vcpu   = var.agent_vcpu
-  memory = var.agent_memory
+  vcpu   = var.worker_vcpu
+  memory = var.worker_memory
 
 
   kernel = libvirt_volume.kernel.id
