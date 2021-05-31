@@ -62,7 +62,7 @@ resource "libvirt_domain" "k3os_master" {
   cmdline = [
     {
       "k3os.fallback_mode"      = "install"
-      "k3os.install.config_url" = "https://raw.githubusercontent.com/frjaraur/terraform-libvirt-k3os/dev1/config-server.yaml"
+      "k3os.install.config_url" = "${var.k3os_master_configfile}"
       "k3os.install.silent"     = true
       "k3os.install.device"     = "/dev/vda"
       "k3os.token"              = random_password.k3s_token.result
@@ -88,7 +88,7 @@ resource "libvirt_volume" "k3os_worker" {
   count = var.worker_count
 
   name   = "k3os-worker-${count.index}.raw"
-  size   = "10737418240"
+  size   = "${var.worker_datadisk_size}"
   format = "raw"
   pool   = libvirt_pool.cluster.name
 }
@@ -116,7 +116,7 @@ resource "libvirt_domain" "k3os_worker" {
   cmdline = [
     {
       "k3os.fallback_mode"      = "install"
-      "k3os.install.config_url" = "https://raw.githubusercontent.com/frjaraur/terraform-libvirt-k3os/dev1/config-agent.yaml"
+      "k3os.install.config_url" = "${var.k3os_worker_configfile}"
       "k3os.install.silent"     = true
       "k3os.install.device"     = "/dev/vda"
       "k3os.server_url"         = format("https://%s:6443", libvirt_domain.k3os_master.network_interface.0.addresses.0)
@@ -193,10 +193,19 @@ resource "null_resource" "deploy_calico" {
     null_resource.get_kubeconfig,
   ]
   provisioner "local-exec" {
-    command = "kubectl --kubeconfig=${path.cwd}/kubeconfig.yaml apply -f https://docs.projectcalico.org/manifests/calico.yaml"
-  }  
-  
+    command = "kubectl --kubeconfig=${path.cwd}/kubeconfig.yaml apply -f ${var.calico_manifests_url}"
+  }   
 }
+
+resource "null_resource" "deploy_ingress" {
+  depends_on = [
+    null_resource.get_kubeconfig,
+  ]
+  provisioner "local-exec" {
+    command = "kubectl --kubeconfig=${path.cwd}/kubeconfig.yaml apply -f ${var.ingress_manifests_url}"
+  }   
+}
+
 
 data "local_file" "kubeconfig" {
   filename = "${path.cwd}/kubeconfig.yaml"
