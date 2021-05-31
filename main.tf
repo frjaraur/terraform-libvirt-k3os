@@ -188,6 +188,16 @@ resource "null_resource" "fix_kubeconfig" {
   }
 }
 
+resource "null_resource" "deploy_calico" {
+  depends_on = [
+    null_resource.get_kubeconfig,
+  ]
+  provisioner "local-exec" {
+    command = "kubectl --kubeconfig=${path.cwd}/kubeconfig.yaml apply -f https://docs.projectcalico.org/manifests/calico.yaml"
+  }  
+  
+}
+
 data "local_file" "kubeconfig" {
   filename = "${path.cwd}/kubeconfig.yaml"
 
