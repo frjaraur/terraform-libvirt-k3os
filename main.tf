@@ -62,7 +62,7 @@ resource "libvirt_domain" "k3os_master" {
   cmdline = [
     {
       "k3os.fallback_mode"      = "install"
-      "k3os.install.config_url" = "${var.k3os_master_configfile}"
+      "k3os.install.config_url" = "https://raw.githubusercontent.com/frjaraur/terraform-libvirt-k3os/dev1/config-server.yaml"
       "k3os.install.silent"     = true
       "k3os.install.device"     = "/dev/vda"
       "k3os.token"              = random_password.k3s_token.result
@@ -116,7 +116,7 @@ resource "libvirt_domain" "k3os_worker" {
   cmdline = [
     {
       "k3os.fallback_mode"      = "install"
-      "k3os.install.config_url" = "${var.k3os_worker_configfile}"
+      "k3os.install.config_url" = "https://raw.githubusercontent.com/frjaraur/terraform-libvirt-k3os/dev1/config-agent.yaml"
       "k3os.install.silent"     = true
       "k3os.install.device"     = "/dev/vda"
       "k3os.server_url"         = format("https://%s:6443", libvirt_domain.k3os_master.network_interface.0.addresses.0)
