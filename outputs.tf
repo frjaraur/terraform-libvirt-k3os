@@ -21,3 +21,5 @@ output "master_ip_address" {
 output "worker_ip_address" {
   value = libvirt_domain.k3os_worker.*.network_interface.0.addresses.0
 }
+
+

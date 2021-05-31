@@ -27,6 +27,12 @@ variable "wait_for_cluster_interpreter" {
   default     = ["/bin/sh", "-c"]
 }
 
+variable "k3os_master_configfile" {
+  description = "Master configuration file for K3s installation"
+  type        = string
+  default     = "https://raw.githubusercontent.com/frjaraur/terraform-libvirt-k3os/dev1/config-master.yaml"
+}
+
 variable "master_vcpu" {
   description = "The amount of virtual CPUs to allocate for masters."
   type        = number
@@ -37,6 +43,12 @@ variable "master_memory" {
   description = "The amount of memory in MiB to allocate for masters."
   type        = number
   default     = 1024
+}
+
+variable "k3os_worker_configfile" {
+  description = "Worker configuration file for K3s installation"
+  type        = string
+  default     = "https://raw.githubusercontent.com/frjaraur/terraform-libvirt-k3os/dev1/config-worker.yaml"
 }
 
 variable "worker_vcpu" {
@@ -50,3 +62,22 @@ variable "worker_memory" {
   type        = number
   default     = 1024
 }
+
+variable "worker_datadisk_size" {
+  description = "The amount of memory in bytes to allocate for workers as secondary block device."
+  type        = number
+  default     = 10737418240 # 10GiB
+}
+
+variable "calico_manifests_url" {
+  description = "Calico manifests url"
+  type        = string
+  default     = "https://docs.projectcalico.org/manifests/calico.yaml"
+}
+
+variable "ingress_manifests_url" {
+  description = "Ingress manifests url"
+  type        = string
+  default     = "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.46.0/deploy/static/provider/baremetal/deploy.yaml"
+}
+

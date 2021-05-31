@@ -88,7 +88,7 @@ resource "libvirt_volume" "k3os_worker" {
   count = var.worker_count
 
   name   = "k3os-worker-${count.index}.raw"
-  size   = "10737418240"
+  size   = "${var.worker_datadisk_size}"
   format = "raw"
   pool   = libvirt_pool.cluster.name
 }
@@ -193,10 +193,19 @@ resource "null_resource" "deploy_calico" {
     null_resource.get_kubeconfig,
   ]
   provisioner "local-exec" {
-    command = "kubectl --kubeconfig=${path.cwd}/kubeconfig.yaml apply -f https://docs.projectcalico.org/manifests/calico.yaml"
-  }  
-  
+    command = "kubectl --kubeconfig=${path.cwd}/kubeconfig.yaml apply -f ${var.calico_manifests_url}"
+  }   
 }
+
+resource "null_resource" "deploy_ingress" {
+  depends_on = [
+    null_resource.get_kubeconfig,
+  ]
+  provisioner "local-exec" {
+    command = "kubectl --kubeconfig=${path.cwd}/kubeconfig.yaml apply -f ${var.ingress_manifests_url}"
+  }   
+}
+
 
 data "local_file" "kubeconfig" {
   filename = "${path.cwd}/kubeconfig.yaml"
