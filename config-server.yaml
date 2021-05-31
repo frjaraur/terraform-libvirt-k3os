@@ -1,6 +1,6 @@
 #cloud-config
 ssh_authorized_keys:
-  - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAWW/r4lefNWqQ2g4RRrNe9wlVdhHq2xIJkXsYwgfjO5"
+  - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM4KA/J+gMroFaY7j45CnqIjwWKzhi1sm6Bmd7wSwFGf"
 
 k3os:
   k3s_args:

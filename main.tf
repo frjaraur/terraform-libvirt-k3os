@@ -62,7 +62,7 @@ resource "libvirt_domain" "k3os_server" {
   cmdline = [
     {
       "k3os.fallback_mode"      = "install"
-      "k3os.install.config_url" = "https://raw.githubusercontent.com/camptocamp/terraform-libvirt-k3os/master/config-server.yaml"
+      "k3os.install.config_url" = "https://raw.githubusercontent.com/frjaraur/terraform-libvirt-k3os/dev1/config-server.yaml"
       "k3os.install.silent"     = true
       "k3os.install.device"     = "/dev/vda"
       "k3os.token"              = random_password.k3s_token.result
@@ -108,7 +108,7 @@ resource "libvirt_domain" "k3os_agent" {
   cmdline = [
     {
       "k3os.fallback_mode"      = "install"
-      "k3os.install.config_url" = "https://raw.githubusercontent.com/camptocamp/terraform-libvirt-k3os/master/config-agent.yaml"
+      "k3os.install.config_url" = "https://raw.githubusercontent.com/frjaraur/terraform-libvirt-k3os/dev1/config-agent.yaml"
       "k3os.install.silent"     = true
       "k3os.install.device"     = "/dev/vda"
       "k3os.server_url"         = format("https://%s:6443", libvirt_domain.k3os_server.network_interface.0.addresses.0)
@@ -151,7 +151,7 @@ resource "null_resource" "wait_for_kubeconfig" {
   ]
 
   provisioner "local-exec" {
-    command = "chmod 0600 ${path.module}/id_ed25519 && ssh -o StrictHostKeyChecking=no -i ${path.module}/id_ed25519 rancher@${libvirt_domain.k3os_server.network_interface.0.addresses.0} 'for i in `seq 1 60`; do test -f /etc/rancher/k3s/k3s.yaml && exit 0 || true; sleep 5; done; echo TIMEOUT && exit 1'"
+    command = "chmod 0600 ${path.module}/provision && ssh -o StrictHostKeyChecking=no -i ${path.module}/provision rancher@${libvirt_domain.k3os_server.network_interface.0.addresses.0} 'for i in `seq 1 60`; do test -f /etc/rancher/k3s/k3s.yaml && exit 0 || true; sleep 5; done; echo TIMEOUT && exit 1'"
   }
 }
 
@@ -161,7 +161,7 @@ resource "null_resource" "get_kubeconfig" {
   ]
 
   provisioner "local-exec" {
-    command = "chmod 0600 ${path.module}/id_ed25519 && ssh -o StrictHostKeyChecking=no -i ${path.module}/id_ed25519 rancher@${libvirt_domain.k3os_server.network_interface.0.addresses.0} cat /etc/rancher/k3s/k3s.yaml > ${path.cwd}/kubeconfig.yaml"
+    command = "chmod 0600 ${path.module}/provision && ssh -o StrictHostKeyChecking=no -i ${path.module}/provision rancher@${libvirt_domain.k3os_server.network_interface.0.addresses.0} cat /etc/rancher/k3s/k3s.yaml > ${path.cwd}/kubeconfig.yaml"
   }
 }
 
