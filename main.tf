@@ -44,7 +44,7 @@ resource "libvirt_volume" "iso" {
 }
 
 resource "libvirt_volume" "k3os_master" {
-  name   = "k3os-server.raw"
+  name   = "k3os-master.raw"
   size   = "10737418240"
   format = "raw"
   pool   = libvirt_pool.cluster.name
@@ -87,7 +87,15 @@ resource "libvirt_domain" "k3os_master" {
 resource "libvirt_volume" "k3os_worker" {
   count = var.node_count
 
-  name   = "k3os-server-${count.index}.raw"
+  name   = "k3os-worker-${count.index}.raw"
+  size   = "10737418240"
+  format = "raw"
+  pool   = libvirt_pool.cluster.name
+}
+
+resource "libvirt_volume" "k3os_worker_data" {
+  count = var.node_count
+  name   = "k3os-worker-${count.index}-data.raw"
   size   = "10737418240"
   format = "raw"
   pool   = libvirt_pool.cluster.name
@@ -123,6 +131,11 @@ resource "libvirt_domain" "k3os_worker" {
   disk {
     file = libvirt_volume.iso.id
   }
+
+  disk {
+    file = libvirt_volume.k3os_worker_data[count.index].id
+  }
+
 
   network_interface {
     network_id     = libvirt_network.k3os.id
