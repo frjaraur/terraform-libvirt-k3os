@@ -43,15 +43,15 @@ resource "libvirt_volume" "iso" {
   format = "iso"
 }
 
-resource "libvirt_volume" "k3os_server" {
+resource "libvirt_volume" "k3os_master" {
   name   = "k3os-server.raw"
   size   = "10737418240"
   format = "raw"
   pool   = libvirt_pool.cluster.name
 }
 
-resource "libvirt_domain" "k3os_server" {
-  name = "k3os-server-${var.cluster_name}"
+resource "libvirt_domain" "k3os_master" {
+  name = "k3os-master-${var.cluster_name}"
 
   vcpu   = var.server_vcpu
   memory = var.server_memory
@@ -70,7 +70,7 @@ resource "libvirt_domain" "k3os_server" {
   ]
 
   disk {
-    file = libvirt_volume.k3os_server.id
+    file = libvirt_volume.k3os_master.id
   }
 
   disk {
@@ -79,12 +79,12 @@ resource "libvirt_domain" "k3os_server" {
 
   network_interface {
     network_id     = libvirt_network.k3os.id
-    hostname       = "server"
+    hostname       = "k3os-master-${var.cluster_name}"
     wait_for_lease = true
   }
 }
 
-resource "libvirt_volume" "k3os_agent" {
+resource "libvirt_volume" "k3os_worker" {
   count = var.node_count
 
   name   = "k3os-server-${count.index}.raw"
@@ -93,10 +93,10 @@ resource "libvirt_volume" "k3os_agent" {
   pool   = libvirt_pool.cluster.name
 }
 
-resource "libvirt_domain" "k3os_agent" {
+resource "libvirt_domain" "k3os_worker" {
   count = var.node_count
 
-  name = "k3os-agent-${var.cluster_name}-${count.index}"
+  name = "k3os-worker-${var.cluster_name}-${count.index}"
 
   vcpu   = var.agent_vcpu
   memory = var.agent_memory
@@ -111,13 +111,13 @@ resource "libvirt_domain" "k3os_agent" {
       "k3os.install.config_url" = "https://raw.githubusercontent.com/frjaraur/terraform-libvirt-k3os/dev1/config-agent.yaml"
       "k3os.install.silent"     = true
       "k3os.install.device"     = "/dev/vda"
-      "k3os.server_url"         = format("https://%s:6443", libvirt_domain.k3os_server.network_interface.0.addresses.0)
+      "k3os.server_url"         = format("https://%s:6443", libvirt_domain.k3os_master.network_interface.0.addresses.0)
       "k3os.token"              = random_password.k3s_token.result
     }
   ]
 
   disk {
-    file = libvirt_volume.k3os_agent[count.index].id
+    file = libvirt_volume.k3os_worker[count.index].id
   }
 
   disk {
@@ -126,7 +126,7 @@ resource "libvirt_domain" "k3os_agent" {
 
   network_interface {
     network_id     = libvirt_network.k3os.id
-    hostname       = "server"
+    hostname       = "k3os-worker-${var.cluster_name}-${count.index}"
     wait_for_lease = true
   }
 }
@@ -140,7 +140,7 @@ resource "null_resource" "wait_for_cluster" {
     command     = var.wait_for_cluster_cmd
     interpreter = var.wait_for_cluster_interpreter
     environment = {
-      ENDPOINT = format("https://%s:6443", libvirt_domain.k3os_server.network_interface.0.addresses.0)
+      ENDPOINT = format("https://%s:6443", libvirt_domain.k3os_master.network_interface.0.addresses.0)
     }
   }
 }
@@ -151,7 +151,7 @@ resource "null_resource" "wait_for_kubeconfig" {
   ]
 
   provisioner "local-exec" {
-    command = "chmod 0600 ${path.module}/provision && ssh -o StrictHostKeyChecking=no -i ${path.module}/provision rancher@${libvirt_domain.k3os_server.network_interface.0.addresses.0} 'for i in `seq 1 60`; do test -f /etc/rancher/k3s/k3s.yaml && exit 0 || true; sleep 5; done; echo TIMEOUT && exit 1'"
+    command = "chmod 0600 ${path.module}/provision && ssh -o StrictHostKeyChecking=no -i ${path.module}/provision rancher@${libvirt_domain.k3os_master.network_interface.0.addresses.0} 'for i in `seq 1 60`; do test -f /etc/rancher/k3s/k3s.yaml && exit 0 || true; sleep 5; done; echo TIMEOUT && exit 1'"
   }
 }
 
@@ -161,7 +161,7 @@ resource "null_resource" "get_kubeconfig" {
   ]
 
   provisioner "local-exec" {
-    command = "chmod 0600 ${path.module}/provision && ssh -o StrictHostKeyChecking=no -i ${path.module}/provision rancher@${libvirt_domain.k3os_server.network_interface.0.addresses.0} cat /etc/rancher/k3s/k3s.yaml > ${path.cwd}/kubeconfig.yaml"
+    command = "chmod 0600 ${path.module}/provision && ssh -o StrictHostKeyChecking=no -i ${path.module}/provision rancher@${libvirt_domain.k3os_master.network_interface.0.addresses.0} cat /etc/rancher/k3s/k3s.yaml > ${path.cwd}/kubeconfig.yaml"
   }
 }
 
@@ -171,7 +171,7 @@ resource "null_resource" "fix_kubeconfig" {
   ]
 
   provisioner "local-exec" {
-    command = "sed -i -e 's/127.0.0.1/${libvirt_domain.k3os_server.network_interface.0.addresses.0}/' ${path.cwd}/kubeconfig.yaml"
+    command = "sed -i -e 's/127.0.0.1/${libvirt_domain.k3os_master.network_interface.0.addresses.0}/' ${path.cwd}/kubeconfig.yaml"
   }
 }
 
